@@ -37,6 +37,7 @@ AddEventHandler('onResourceStop', function(resource)
     end
 end)
 
+
 -- Functions
 
 local function loadAnimDict(dict)
@@ -368,7 +369,7 @@ Citizen.CreateThread(function()
                 local entrance = #(pos - vector3(Apartments.Locations[ClosestHouse].coords.enter.x, Apartments.Locations[ClosestHouse].coords.enter.y,Apartments.Locations[ClosestHouse].coords.enter.z))
 
                 if doorbelldist < 1.2 then
-                    DrawText3D(Apartments.Locations[ClosestHouse].coords.doorbell.x, Apartments.Locations[ClosestHouse].coords.doorbell.y, Apartments.Locations[ClosestHouse].coords.doorbell.z, '~g~G~w~ - Ring Doorbell')
+                --   DrawText3D(Apartments.Locations[ClosestHouse].coords.doorbell.x, Apartments.Locations[ClosestHouse].coords.doorbell.y, Apartments.Locations[ClosestHouse].coords.doorbell.z, '~g~G~w~ - Ring Doorbell')
                     if IsControlJustPressed(0, 47) then -- G
                         MenuOwners()
                         Menu.hidden = not Menu.hidden
@@ -377,24 +378,33 @@ Citizen.CreateThread(function()
                 end
 
                 if IsOwned then
-                   if entrance < 1.2 then
-                        DrawText3D(Apartments.Locations[ClosestHouse].coords.enter.x, Apartments.Locations[ClosestHouse].coords.enter.y, Apartments.Locations[ClosestHouse].coords.enter.z, '~g~E~w~ - Enter Apartment')
+                    if entrance < 1.2 then
+                        DrawMarker(27, Apartments.Locations[ClosestHouse].coords.enter.x, Apartments.Locations[ClosestHouse].coords.enter.y, Apartments.Locations[ClosestHouse].coords.enter.z, '~g~E~w~ - Enter Apartment')
+                        if not shownText then -- here
+                            shownText = true
+                            exports['qb-drawtext']:DrawText('[E] TO ENTER [G] FOR MORE')
+                        end
                         if IsControlJustPressed(0, 38) then -- E
                             QBCore.Functions.TriggerCallback('apartments:GetOwnedApartment', function(result)
                                 if result ~= nil then
                                     EnterApartment(ClosestHouse, result.name)
+                                    if shownText then -- here
+                                        exports['qb-drawtext']:KeyPressed()
+                                        shownText = false
+                                    end
                                 end
                             end)
                         end
-                    end
-                elseif not IsOwned then
-                    if entrance < 1.2 then
-                        DrawText3D(Apartments.Locations[ClosestHouse].coords.enter.x, Apartments.Locations[ClosestHouse].coords.enter.y, Apartments.Locations[ClosestHouse].coords.enter.z, '~g~E~w~ - Change Apartment')
-                        if IsControlJustPressed(0, 38) then -- E
-                            local apartmentType = ClosestHouse
-                            local apartmentLabel = Apartments.Locations[ClosestHouse].label
-                            TriggerServerEvent("apartments:server:UpdateApartment", apartmentType, apartmentLabel)
-                            IsOwned = true
+                    elseif not InApartment then
+                        if shownText then
+                            exports['qb-drawtext']:HideText()
+                            shownText = false
+                        end
+                    elseif InApartment then
+                        letSleep = false 
+                        if shownText then -- here
+                            exports['qb-drawtext']:HideText()
+                            shownText = false
                         end
                     end
                 end
